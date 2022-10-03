@@ -31,7 +31,7 @@ void setup(){
 
   oled.init();        // инициализация
   oled.clear();       // очистка
-  oled.setScale(3);   // масштаб текста (1..4)
+  oled.setScale(2);   // масштаб текста (1..4)
   oled.home();        // курсор в 0,0
   delay(100);
   oled.setScale(1);
@@ -83,12 +83,12 @@ void Pressure_Data_read(){
             }
           }
       Press_read = Analog_data_read[count_read/2];             // берем среднее значение из полученного массива
-      Press_read = map(Press_read, 0, 4095, 0, Input_mV)-DELTA_mV_Press;            // масштабируем полученную величину в милливольты 
+      Press_read = map(Press_read, 0, 4095, 0, Input_mV)-DELTA_mV_Press;            // масштабируем полученную величину в милливольты
   Serial.print(Press_read);
   Serial.print(" -> ");
 
   if ((Press_read >= 500)&&(Press_read <= 4500)){                // берем значения из рабочего диапазона датчика давления
-  Press_bar = (map(Press_read, 500, 4500, 0, 500));    // масштабируем милливольты в значения давления (500 - верхний диапазон датчика давления для датчика 0,5 МПа) 
+  Press_bar = (map(Press_read, 500, 4500, 0, 500));    // масштабируем милливольты в значения давления (500 - верхний диапазон датчика давления для датчика 0,5 МПа)
   Press_sensor = Press_bar*0.01;                         // переводим значение в float
   }
   else if (Press_read < 500){                             // присваиваем граничные значения при выходе за пределы рабочего диапазона датчика давления
@@ -98,20 +98,20 @@ void Pressure_Data_read(){
 Serial.println(Press_sensor);
 }
 
-void LCD_print(){
-    oled.setCursor(0, 0);
+void oled_print(){
+    oled.setCursor(0, 1);
   oled.print("Voltage: ");
   oled.print(Press_read);
   oled.print(" mV  ");
-    oled.setCursor(0, 1);
+    oled.setCursor(0, 2);
   oled.print("Pressure: ");
   oled.print(Press_sensor);
   oled.print(" bar  ");
-    oled.setCursor(0, 2);
+    oled.setCursor(0, 3);
   oled.print("Т в шкафу: ");
   oled.print(T_system);
   oled.print(" С°  ");
-    oled.setCursor(0, 3);
+    oled.setCursor(0, 4);
   oled.print(" Т холодной воды: ");
   oled.print(T_cold_water);
   oled.print(" С° ");
