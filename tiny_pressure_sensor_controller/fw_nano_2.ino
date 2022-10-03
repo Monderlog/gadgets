@@ -110,15 +110,15 @@ void oled_print(){
     oled.setCursor(0, 3);
   oled.print("Т в шкафу: ");
   oled.print(T_system);
-  oled..write(223)
+  oled.write(223);
   oled.print("С  ");
     oled.setCursor(0, 4);
   oled.print(" Т холодной воды: ");
   oled.print(T_cold_water);
-  oled..write(223)
+  oled.write(223);
   oled.print("С ");
   oled.print(" Т горячей воды: ");
   oled.print(T_hot_water);
-  oled..write(223)
+  oled.write(223);
   oled.print("С ");
 }
