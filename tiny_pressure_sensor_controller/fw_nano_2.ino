@@ -46,28 +46,22 @@ void loop(){
   // запрос давления
   Pressure_Data_read();
   // запрос температуры
+  Temperature();
+  }
+}
+void Temperature(){
   T_system_sensor.requestTemp();
   T_cold_water_sensor.requestTemp();
   T_hot_water_sensor.requestTemp();
-}
-
-void Temperature(){
-  // ДАТЧИК на плате
-  Serial.print("T-sys: ");
   // Т на плате
-  if (T_system_sensor.readTemp()) Serial.println(T_system_sensor.getTemp());
-  else Serial.println("error");
-  // ДАТЧИК Т ХВС
-  Serial.print(", T-cold: ");
+  if (T_system_sensor.readTemp()) T_system = T_system_sensor.getTemp();
+  else T_system = "error";
   // Т ХВС
-  if (T_cold_water_sensor.readTemp()) Serial.println(T_cold_water_sensor.getTemp());
-  else Serial.println("error");
-  // ДАТЧИК Т ГВС
-  Serial.print(", T-hot: ");
+  if (T_cold_water_sensor.readTemp()) T_cold_water = T_cold_water_sensor.getTemp();
+  else T_cold_water = "error";
   // Т ГВС
-  if (T_hot_water_sensor.readTemp()) Serial.println(T_hot_water_sensor.getTemp());
-  else Serial.println("error");
-  }
+  if (T_hot_water_sensor.readTemp()) T_hot_water = T_hot_water_sensor.getTemp();
+  else T_hot_water = "error";
 }
 
 void Pressure_Data_read(){
