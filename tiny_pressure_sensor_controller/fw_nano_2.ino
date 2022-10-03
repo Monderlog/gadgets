@@ -3,10 +3,9 @@
 
 #define DELTA_mV_Press 0
 // напряжение питания датчика в милливольтах
-//требуется измерить текущее и указать значение/2, требуется использовать делитель напряжения на резисторах R1=R2 (аналоговый пин имеет ограничение измеряемого напряжения 2500мВ)
 //!от значения напряжения и его стабильности сильно зависит точность измерений
 #define Input_mV 4920
-#define pin_Press_sensor A1
+#define pin_Press_sensor A0
 #define SERIAL_BAUD 9600
 // Цифровые датчики температуры, безадресно 18b20 на D3, D5 и D8
 MicroDS18B20<3> T_system_sensor; // на плате
@@ -26,18 +25,19 @@ float Press_sensor=1;
 
 void setup(){
   Serial.begin(SERIAL_BAUD);
-
     pinMode(pin_Press_sensor, INPUT);
-
   oled.init();        // инициализация
   oled.clear();       // очистка
+  oled.setContrast(230);
   oled.setScale(2);   // масштаб текста (1..4)
   oled.home();        // курсор в 0,0
-  delay(100);
-  oled.setScale(1);
-  oled.print("Температура и давление");
+  oled.print("Измерение");
+  oled.setCursor(0, 4);
+  oled.print("температуры");
+  oled.setCursor(0, 6);
+  oled.print("и давления");
+    delay(2000);
   oled.clear();
-delay(2000);
 }
 
 void loop(){
@@ -47,6 +47,8 @@ void loop(){
   Pressure_Data_read();
   // запрос температуры
   Temperature();
+  // вывод показаний на экран
+  Oled_print();
   }
 }
 void Temperature(){
@@ -56,12 +58,18 @@ void Temperature(){
   // Т на плате
   if (T_system_sensor.readTemp()) T_system = T_system_sensor.getTemp();
   else T_system = "error";
+  Serial.print("T_system: ");
+  Serial.print(T_system);
   // Т ХВС
   if (T_cold_water_sensor.readTemp()) T_cold_water = T_cold_water_sensor.getTemp();
   else T_cold_water = "error";
+  Serial.print(" T_cold_water: ");
+  Serial.print(T_cold_water);
   // Т ГВС
   if (T_hot_water_sensor.readTemp()) T_hot_water = T_hot_water_sensor.getTemp();
   else T_hot_water = "error";
+  Serial.print(" T_hot_water: ");
+  Serial.print(T_hot_water);
 }
 
 void Pressure_Data_read(){
@@ -83,42 +91,51 @@ void Pressure_Data_read(){
             }
           }
       Press_read = Analog_data_read[count_read/2];             // берем среднее значение из полученного массива
-      Press_read = map(Press_read, 0, 4095, 0, Input_mV)-DELTA_mV_Press;            // масштабируем полученную величину в милливольты
+      Press_read = map(Press_read, 0, 1023, 0, Input_mV)-DELTA_mV_Press;            // масштабируем полученную величину в милливольты
+  Serial.print(" Press mV: ");
   Serial.print(Press_read);
   Serial.print(" -> ");
 
   if ((Press_read >= 500)&&(Press_read <= 4500)){                // берем значения из рабочего диапазона датчика давления
-  Press_bar = (map(Press_read, 500, 4500, 0, 500));    // масштабируем милливольты в значения давления (500 - верхний диапазон датчика давления для датчика 0,5 МПа)
+  Press_bar = (map(Press_read, 500, 4500, 0, 1000));    // масштабируем милливольты в значения давления (500 - верхний диапазон датчика давления для датчика 0,5 МПа)
   Press_sensor = Press_bar*0.01;                         // переводим значение в float
   }
   else if (Press_read < 500){                             // присваиваем граничные значения при выходе за пределы рабочего диапазона датчика давления
     Press_sensor = 0.00;  }
   else if (Press_read > 4500){
     Press_sensor = 10.0;  }
+Serial.print(" Press BAR: ");
 Serial.println(Press_sensor);
 }
 
-void oled_print(){
-    oled.setCursor(0, 1);
-  oled.print("Voltage: ");
+void Oled_print(){
+  oled.autoPrintln(true);
+  oled.setContrast(100);
+  oled.setScale(1);
+  oled.home();
+  oled.print("Напряжение: ");
   oled.print(Press_read);
-  oled.print(" mV  ");
-    oled.setCursor(0, 2);
-  oled.print("Pressure: ");
+  oled.print(" mV ");
+  oled.setCursor(0, 1);
+  oled.print("Давление:   ");
   oled.print(Press_sensor);
-  oled.print(" bar  ");
-    oled.setCursor(0, 3);
-  oled.print("Т в шкафу: ");
+  oled.print(" bar");
+  oled.setCursor(0, 2);
+  oled.setScale(1);
+  oled.print("На плате:      ");
+  oled.setScale(2);
   oled.print(T_system);
-  oled.write(223);
-  oled.print("С  ");
-    oled.setCursor(0, 4);
-  oled.print(" Т холодной воды: ");
+  oled.print("C");
+  oled.setCursor(0, 4);
+  oled.setScale(1);
+  oled.print("Холодная вода: ");
+  oled.setScale(2);
   oled.print(T_cold_water);
-  oled.write(223);
-  oled.print("С ");
-  oled.print(" Т горячей воды: ");
+  oled.print("C");
+  oled.setCursor(0, 6);
+  oled.setScale(1);
+  oled.print("Горячая вода:  ");
+  oled.setScale(2);
   oled.print(T_hot_water);
-  oled.write(223);
-  oled.print("С ");
+  oled.print("C");
 }
